@@ -9,6 +9,7 @@ import OrderProvider from "./ContextAPIs/OrderProvider";
 const queryClient = new QueryClient();
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import BasicProvider from "./ContextAPIs/BasicProvider.jsx";
+import CartProvider from "./ContextAPIs/CartProvider.jsx";
 import 'aos/dist/aos.css';
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <QueryClientProvider client={queryClient}>
       <OrderProvider>
         <BasicProvider>
-          <RouterProvider router={Router} />
+          <CartProvider>
+            <RouterProvider router={Router} />
+          </CartProvider>
         </BasicProvider>
       </OrderProvider>
     </QueryClientProvider>
