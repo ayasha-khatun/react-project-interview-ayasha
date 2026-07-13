@@ -113,10 +113,11 @@ const Courses = () => {
 
                                         {/* Add to Cart */}
                                         <button
-                                            onClick={() => addToCart(course)}
+                                            onClick={() => !alreadyInCart && addToCart(course)}
+                                            disabled={alreadyInCart}
                                             className={`mt-auto flex items-center justify-center gap-2 py-2 px-4 rounded font-bold text-sm w-full transition-colors duration-200 ${
                                                 alreadyInCart
-                                                    ? "bg-green-500 text-white cursor-default"
+                                                    ? "bg-green-500 text-white cursor-not-allowed opacity-80"
                                                     : "bg-blue-500 hover:bg-blue-600 text-white"
                                             }`}
                                         >
