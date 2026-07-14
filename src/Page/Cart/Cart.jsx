@@ -7,7 +7,6 @@ const Cart = () => {
 
     return (
         <div className="p-4 md:p-6">
-            <h1 className="text-xl font-bold text-gray-800 mb-4">My Cart</h1>
 
             {cartArray.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-gray-500">

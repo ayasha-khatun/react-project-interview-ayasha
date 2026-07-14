@@ -107,7 +107,7 @@ const Checkout = () => {
     };
 
     return (
-        <div className="mt-4 border mx-2 mb-6">
+        <div className="mt-4 mb-6 max-w-5xl mx-auto px-2">
             {/* Header */}
             <div className="bg-[#6f42c1] text-white p-6 text-center">
                 <h2 className="text-3xl md:text-4xl font-bold">Trainee Admission Form</h2>
