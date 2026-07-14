@@ -36,10 +36,30 @@ const Checkout = () => {
         guardianName: "",
         dob: "",
         bloodGroup: "",
+        photo: null,
     });
 
+    const [photoPreview, setPhotoPreview] = useState(null);
+
     const handleChange = (e) => {
-        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, type, files, value } = e.target;
+        if (type === "file") {
+            const file = files?.[0] || null;
+            setFormData((prev) => ({ ...prev, [name]: file }));
+            
+            // Image preview create করো
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPhotoPreview(reader.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                setPhotoPreview(null);
+            }
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: value }));
+        }
     };
 
     const generateOrderId = () => {
@@ -62,6 +82,10 @@ const Checkout = () => {
         }
         if (!formData.email.trim()) {
             toast.error("Email is required!", { position: "top-right" });
+            return;
+        }
+        if (!formData.photo) {
+            toast.error("Student Photo is required!", { position: "top-right" });
             return;
         }
         if (cartArray.length === 0) {
@@ -110,7 +134,7 @@ const Checkout = () => {
             nid_no: formData.nid || "N/A",
             local_guardian_name: formData.guardianName || "N/A",
             local_guardian_phone_no: formData.parentNumber || "01700000000",
-            photo: course.photo,
+            photo: formData.photo || course.photo,
             course_id: course.id,
             course_name: course.course_name,
             course_qty: course.quantity,
@@ -122,7 +146,24 @@ const Checkout = () => {
 
         // API তে submit
         try {
-            await axiosPublic.post("/course-purchase", apiPayload);
+            let config = { headers: {} };
+            let payload = apiPayload;
+
+            // যদি photo file থাকে, FormData দিয়ে পাঠাই
+            if (formData.photo && formData.photo instanceof File) {
+                const formDataObj = new FormData();
+                Object.keys(apiPayload).forEach((key) => {
+                    if (key === "photo") {
+                        formDataObj.append(key, formData.photo);
+                    } else {
+                        formDataObj.append(key, apiPayload[key]);
+                    }
+                });
+                payload = formDataObj;
+                config.headers["Content-Type"] = "multipart/form-data";
+            }
+
+            await axiosPublic.post("/course-purchase", payload, config);
             toast.success("Order submitted successfully!", { position: "top-right" });
         } catch (err) {
             const msg = err?.response?.data?.errors?.[0] || "Order submitted (saved locally).";
@@ -260,6 +301,34 @@ const Checkout = () => {
                                     <option key={bg} value={bg}>{bg}</option>
                                 ))}
                             </select>
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-sm mb-1">Student Photo: <span className="text-red-500">*</span></label>
+                            <input
+                                type="file"
+                                name="photo"
+                                onChange={handleChange}
+                                accept="image/*"
+                                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:border-purple-400"
+                            />
+                            
+                            {/* Image Preview */}
+                            {photoPreview ? (
+                                <div className="mt-3 border-2 border-dashed border-purple-300 rounded-md p-3 bg-purple-50">
+                                    <img 
+                                        src={photoPreview} 
+                                        alt="Preview" 
+                                        className="w-32 h-40 object-cover rounded-md mx-auto"
+                                    />
+                                    <p className="text-xs text-green-600 text-center mt-2 font-semibold">
+                                        ✓ {formData.photo.name}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="mt-3 border-2 border-dashed border-gray-300 rounded-md p-6 bg-gray-50 text-center">
+                                    <p className="text-gray-400 text-sm">📷 Upload Photo</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
