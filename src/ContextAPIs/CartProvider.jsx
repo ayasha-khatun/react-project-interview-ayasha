@@ -1,11 +1,24 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
 export const CartContext = createContext(null);
 
 const CartProvider = ({ children }) => {
     // cart: { [courseId]: { ...courseData, quantity } }
-    const [cartItems, setCartItems] = useState({});
+    const [cartItems, setCartItems] = useState(() => {
+        // localStorage থেকে initial value load করো
+        try {
+            const saved = localStorage.getItem("cartItems");
+            return saved ? JSON.parse(saved) : {};
+        } catch {
+            return {};
+        }
+    });
+
+    // cartItems change হলে localStorage এ save করো
+    useEffect(() => {
+        localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    }, [cartItems]);
 
     // কোর্স add করা — শুধু একটি ভিন্ন কোর্স রাখা যাবে
     const addToCart = (course) => {
@@ -65,7 +78,10 @@ const CartProvider = ({ children }) => {
         toast.error("Course removed from cart.", { position: "top-right" });
     };
 
-    const clearCart = () => setCartItems({});
+    const clearCart = () => {
+        setCartItems({});
+        localStorage.removeItem("cartItems");
+    };
 
     const cartArray = Object.values(cartItems);
     const totalPrice = cartArray.reduce(

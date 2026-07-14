@@ -302,31 +302,48 @@ const Checkout = () => {
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <label className="block font-semibold text-sm mb-1">Student Photo: <span className="text-red-500">*</span></label>
-                            <input
-                                type="file"
-                                name="photo"
-                                onChange={handleChange}
-                                accept="image/*"
-                                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:border-purple-400"
-                            />
-                            
-                            {/* Image Preview */}
+                    </div>
+
+                    {/* Student Photo - Full Width Section */}
+                    <div className="mb-4">
+                        <label className="block font-semibold text-sm mb-3">Student Photo: <span className="text-red-500">*</span></label>
+                        
+                        <div className="relative">
                             {photoPreview ? (
-                                <div className="mt-3 border-2 border-dashed border-purple-300 rounded-md p-3 bg-purple-50">
-                                    <img 
-                                        src={photoPreview} 
-                                        alt="Preview" 
-                                        className="w-32 h-40 object-cover rounded-md mx-auto"
-                                    />
-                                    <p className="text-xs text-green-600 text-center mt-2 font-semibold">
-                                        ✓ {formData.photo.name}
-                                    </p>
+                                <div className="border-2 border-dashed border-purple-400 rounded-lg p-6 bg-purple-50 hover:bg-purple-100 transition cursor-pointer relative">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <img 
+                                            src={photoPreview} 
+                                            alt="Preview" 
+                                            className="h-48 w-40 object-cover rounded-lg shadow-md mb-4"
+                                        />
+                                        <p className="text-sm font-semibold text-green-600 mb-2">✓ Image Selected</p>
+                                        <p className="text-xs text-gray-600 break-all max-w-xs">{formData.photo.name}</p>
+                                        <input
+                                            type="file"
+                                            name="photo"
+                                            onChange={handleChange}
+                                            accept="image/*"
+                                            className="absolute inset-0 opacity-0 cursor-pointer rounded-lg"
+                                        />
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="mt-3 border-2 border-dashed border-gray-300 rounded-md p-6 bg-gray-50 text-center">
-                                    <p className="text-gray-400 text-sm">📷 Upload Photo</p>
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 bg-gray-50 hover:bg-gray-100 transition cursor-pointer relative text-center">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <svg className="w-20 h-20 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p className="text-gray-600 font-semibold mb-1">Upload Photo</p>
+                                        <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        name="photo"
+                                        onChange={handleChange}
+                                        accept="image/*"
+                                        className="absolute inset-0 opacity-0 cursor-pointer rounded-lg"
+                                    />
                                 </div>
                             )}
                         </div>
