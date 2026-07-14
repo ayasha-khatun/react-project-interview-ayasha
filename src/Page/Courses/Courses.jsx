@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaStar } from "react-icons/fa";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 import { useCart } from "../../ContextAPIs/CartProvider";
 
@@ -10,6 +10,7 @@ const Courses = () => {
     const axiosPublic = useAxiosPublic();
     const { addToCart, cartItems } = useCart();
     const [currentPage, setCurrentPage] = useState(1);
+    const [expandedId, setExpandedId] = useState(null);
 
     const { data: courses = [], isLoading, isError } = useQuery({
         queryKey: ["courses"],
@@ -24,6 +25,12 @@ const Courses = () => {
         const dis = parseFloat(discount);
         if (!reg || reg === 0) return 0;
         return Math.round(((reg - dis) / reg) * 100);
+    };
+
+    // strip html tags from course_details
+    const stripHtml = (html) => {
+        if (!html) return "";
+        return html.replace(/<[^>]*>/g, "").trim();
     };
 
     const totalPages = Math.ceil(courses.length / ITEMS_PER_PAGE);
@@ -63,49 +70,79 @@ const Courses = () => {
                                 course.discount_price
                             );
                             const alreadyInCart = !!cartItems[course.id];
+                            const isExpanded = expandedId === course.id;
+                            const details = stripHtml(course.course_details);
 
                             return (
                                 <div
                                     key={course.id}
                                     className="bg-white shadow-lg rounded-lg overflow-hidden flex flex-col border border-gray-100 hover:shadow-xl transition-shadow duration-300"
                                 >
-                                    {/* Image */}
+                                    {/* Image with label overlay */}
                                     <div className="relative">
                                         <img
                                             src={course.photo}
                                             alt={course.course_name}
                                             className="w-full h-48 object-cover"
                                         />
-                                        {discountPercent > 0 && (
-                                            <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                                -{discountPercent}% OFF
-                                            </span>
-                                        )}
+                                        {/* Category label — top left */}
+                                        <span className="absolute top-2 left-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-2 py-1 rounded">
+                                            {course.trainer_data?.details || "Course"}
+                                        </span>
                                     </div>
 
                                     {/* Content */}
                                     <div className="p-4 flex flex-col flex-1">
+                                        {/* Course Name */}
                                         <h2 className="text-gray-800 text-base font-bold mb-2 leading-snug">
                                             {course.course_name}
                                         </h2>
 
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className="text-yellow-400 text-sm tracking-widest">★★★★★</span>
-                                            <span className="text-gray-500 text-sm font-medium">
-                                                🎓 {course.trainer_data?.name || "N/A"}
+                                        {/* Stars + Trainer */}
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-0.5">
+                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                    <FaStar key={s} className="text-blue-500 text-sm" />
+                                                ))}
+                                            </div>
+                                            <span className="text-gray-600 text-sm font-medium">
+                                                {course.trainer_data?.name || "N/A"}
                                             </span>
                                         </div>
 
+                                        {/* Course Details row */}
+                                        <div className="flex items-center gap-1 text-sm mb-3">
+                                            <span className="text-gray-500">Course Details</span>
+                                            <span className="text-gray-400">|</span>
+                                            <button
+                                                onClick={() =>
+                                                    setExpandedId(isExpanded ? null : course.id)
+                                                }
+                                                className="text-blue-500 hover:underline font-medium focus:outline-none"
+                                            >
+                                                {isExpanded ? "Hide Details" : "Show Details"}
+                                            </button>
+                                        </div>
+
+                                        {/* Expandable details */}
+                                        {isExpanded && details && (
+                                            <p className="text-gray-600 text-sm mb-3 bg-gray-50 rounded p-2 border border-gray-100">
+                                                {details}
+                                            </p>
+                                        )}
+
                                         <hr className="mb-3" />
 
-                                        {/* Price */}
+                                        {/* Price row */}
                                         <div className="flex flex-wrap items-center gap-2 mb-4">
                                             <span className="line-through text-gray-400 text-sm">
                                                 Tk {parseFloat(course.regular_price).toLocaleString()}
                                             </span>
-                                            <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
-                                                -{discountPercent}%
-                                            </span>
+                                            {discountPercent > 0 && (
+                                                <span className="text-green-600 font-bold text-sm">
+                                                    +{discountPercent}%
+                                                </span>
+                                            )}
                                             <span className="text-gray-900 text-lg font-bold">
                                                 Tk {parseFloat(course.discount_price).toLocaleString()}
                                             </span>
