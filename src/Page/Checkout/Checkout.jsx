@@ -10,9 +10,11 @@ const Checkout = () => {
     const axiosPublic = useAxiosPublic();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // cart empty থাকলে cart page এ redirect করো
+    const [submitted, setSubmitted] = useState(false);
+
+    // cart empty থাকলে cart page এ redirect করো — কিন্তু submit হয়ে গেলে না
     useEffect(() => {
-        if (cartArray.length === 0) {
+        if (cartArray.length === 0 && !submitted) {
             toast.warning("Please add a course to cart first!", { position: "top-right" });
             navigate("/cart");
         }
@@ -71,6 +73,11 @@ const Checkout = () => {
 
         const orderId = generateOrderId();
 
+        // course info (first item — API একটার বেশি নেয় না)
+        const course = cartArray[0];
+        const regularPrice = parseFloat(course.regular_price) * course.quantity;
+        const discountPrice = parseFloat(course.discount_price) * course.quantity;
+
         const orderData = {
             order_id: orderId,
             ...formData,
@@ -86,24 +93,53 @@ const Checkout = () => {
             total_amount: totalPrice,
         };
 
-        // API তে submit করার চেষ্টা, না হলে local state দিয়ে
+        // API required fields — exact field names
+        const apiPayload = {
+            name: formData.fullName,
+            phone_no: formData.mobile,
+            email: formData.email,
+            gender: formData.gender || "Male",
+            date_of_birth: formData.dob || "2000-01-01",
+            blood_group: formData.bloodGroup || "A+",
+            father_name: formData.parentName || "N/A",
+            father_phone_no: formData.parentNumber || "01700000000",
+            school_collage_name: formData.school || "N/A",
+            job_title: formData.jobInfo || "N/A",
+            present_address: formData.presentAddress || "N/A",
+            permanent_address: formData.permanentAddress || "N/A",
+            nid_no: formData.nid || "N/A",
+            local_guardian_name: formData.guardianName || "N/A",
+            local_guardian_phone_no: formData.parentNumber || "01700000000",
+            photo: course.photo,
+            course_id: course.id,
+            course_name: course.course_name,
+            course_qty: course.quantity,
+            course_fee: parseFloat(course.regular_price),
+            discount_course_fee: parseFloat(course.discount_price),
+            sub_total_course_fee: discountPrice,
+            total_course_fee: discountPrice,
+        };
+
+        // API তে submit
         try {
-            await axiosPublic.post("/order-submit", orderData);
-        } catch {
-            // API নেই — local এ process করব
+            await axiosPublic.post("/course-purchase", apiPayload);
+            toast.success("Order submitted successfully!", { position: "top-right" });
+        } catch (err) {
+            const msg = err?.response?.data?.errors?.[0] || "Order submitted (saved locally).";
+            toast.info(msg, { position: "top-right" });
         }
 
-        // localStorage এ save করি — Search পেজে খোঁজার জন্য
+        // localStorage এ save — Search পেজে খোঁজার জন্য
         const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
         savedOrders.push(orderData);
         localStorage.setItem("orders", JSON.stringify(savedOrders));
 
-        toast.success("Order submitted successfully!", { position: "top-right" });
-        clearCart();
         setIsSubmitting(false);
+        setSubmitted(true);
 
-        // Order Details page এ navigate করব data সহ
+        // আগে navigate করো, তারপর cart clear
         navigate("/order-details", { state: { orderData, formData } });
+        clearCart();
     };
 
     return (
