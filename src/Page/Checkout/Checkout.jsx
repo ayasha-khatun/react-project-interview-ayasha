@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useCart } from "../../ContextAPIs/CartProvider";
@@ -9,6 +9,14 @@ const Checkout = () => {
     const { cartArray, totalPrice, clearCart } = useCart();
     const axiosPublic = useAxiosPublic();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // cart empty থাকলে cart page এ redirect করো
+    useEffect(() => {
+        if (cartArray.length === 0) {
+            toast.warning("Please add a course to cart first!", { position: "top-right" });
+            navigate("/cart");
+        }
+    }, []);
 
     const [formData, setFormData] = useState({
         fullName: "",
